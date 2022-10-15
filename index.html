@@ -4,6 +4,7 @@
 <head>
   <title>Goals and Todos</title>
   <link rel="stylesheet" href="index.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.1.2/redux.min.js"></script>
 </head>
 
 <body>
@@ -22,6 +23,38 @@
 
   <!-- JS File content: -->
   <script type='text/javascript'>
+    // // Library Code (Clone of what Redux does)
+    // function createStore(reducer) {
+    //   // The store should have four parts:
+    //   // 1. The state
+    //   // 2. Get the state
+    //   // 3. Listen to changes on the state
+    //   // 4. Update the state
+
+    //   let state;
+    //   let listeners = [];
+
+    //   const getState = () => state;
+
+    //   const subscribe = (listener) => {
+    //     listeners.push(listener);
+    //     return () => {
+    //       listeners = listeners.filter((l) => l !== listener);
+    //     };
+    //   };
+
+    //   // calls reducer function
+    //   const dispatch = (action) => {
+    //     state = reducer(state, action);
+    //     listeners.forEach((listener) => listener());
+    //   };
+
+    //   return {
+    //     getState,
+    //     subscribe,
+    //     dispatch,
+    //   };
+    // }
     function generateId() {
       return (
         Math.random().toString(36).substring(2) +
@@ -29,47 +62,14 @@
       );
     }
 
-    // Library Code
-    function createStore(reducer) {
-      // The store should have four parts:
-      // 1. The state
-      // 2. Get the state
-      // 3. Listen to changes on the state
-      // 4. Update the state
-
-      let state;
-      let listeners = [];
-
-      const getState = () => state;
-
-      const subscribe = (listener) => {
-        listeners.push(listener);
-        return () => {
-          listeners = listeners.filter((l) => l !== listener);
-        };
-      };
-
-      // calls reducer function
-      const dispatch = (action) => {
-        state = reducer(state, action);
-        listeners.forEach((listener) => listener());
-      };
-
-      return {
-        getState,
-        subscribe,
-        dispatch,
-      };
-    }
-
-    // App Code
-
     // set variables to reduce bugs:
     const ADD_TODO = 'ADD_TODO'
     const REMOVE_TODO = 'REMOVE_TODO'
     const TOGGLE_TODO = 'TOGGLE_TODO'
     const ADD_GOAL = 'ADD_GOAL'
     const REMOVE_GOAL = 'REMOVE_GOAL'
+
+    // App Code
 
     // action creators
     function addTodoAction(todo) {
@@ -135,15 +135,23 @@
       }
     }
 
-    // 'Root' Reducer
-    function app(state = {}, action) {
-      return {
-        todos: todos(state.todos, action),
-        goals: goals(state.goals, action),
-      }
-    }
+    // // 'Root' Reducer from my Library code
+    // function app(state = {}, action) {
+    //   return {
+    //     todos: todos(state.todos, action),
+    //     goals: goals(state.goals, action),
+    //   }
+    // }
 
-    const store = createStore(app);
+    // // Create store based on Library code
+    // const store = createStore(app);
+
+    // Create store based on Redux code
+    // Also removes the need for the 'root' reducer fn
+    const store = Redux.createStore(Redux.combineReducers({
+      todos,
+      goals,
+    }));
 
     store.subscribe(() => {
       const { goals, todos } = store.getState();
@@ -199,7 +207,7 @@
     document.getElementById('goalBtn')
       .addEventListener('click', addGoal);
 
-    function createRemoveButton (onClick) {
+    function createRemoveButton(onClick) {
       const removeBtn = document.createElement('button')
       removeBtn.innerHTML = 'x'
       removeBtn.addEventListener('click', onClick)

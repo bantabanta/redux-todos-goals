@@ -23,7 +23,8 @@
 
   <!-- JS File content: -->
   <script type='text/javascript'>
-    // // Library Code (Clone of what Redux does)
+
+    // // LIBRARY CODE (Clone of what Redux does)
     // function createStore(reducer) {
     //   // The store should have four parts:
     //   // 1. The state
@@ -55,6 +56,7 @@
     //     dispatch,
     //   };
     // }
+
     function generateId() {
       return (
         Math.random().toString(36).substring(2) +
@@ -69,7 +71,7 @@
     const ADD_GOAL = 'ADD_GOAL'
     const REMOVE_GOAL = 'REMOVE_GOAL'
 
-    // App Code
+    // APP CODE
 
     // action creators
     function addTodoAction(todo) {
@@ -146,15 +148,64 @@
     // // Create store based on Library code
     // const store = createStore(app);
 
+    // Middleware functions
+    const checker = (store) => (next) => (action) => {
+      // now have access to store next and action
+      if (
+        action.type === ADD_TODO &&
+        action.todo.name.toLowerCase().includes('bitcoin')
+      ) {
+        return alert("Nope, That's a bad idea");
+      }
+
+      if (
+        action.type === ADD_GOAL &&
+        action.goal.name.toLowerCase().includes('bitcoin')
+      ) {
+        return alert("Nope, That's a bad idea");
+      }
+
+      return next(action);
+    }
+
+    const logger = (store) => (next) => (action) => {
+      console.group(action.type)
+        console.log('The action: ', action)
+        const result = next(action)
+        console.log('The new state: ', store.getState())
+      console.groupEnd();
+      return result
+    }
+
+    const congrats = (store) => (next) => (action) => {
+      if (
+        action.type === ADD_GOAL
+      ) {
+        alert("That's a great goal!")
+        return next(action)
+      }
+      return next(action)
+    }
+
+    const remind = (store) => (next) => (action) => {
+      if (
+        action.type === ADD_TODO
+      ) {
+        alert(`Don't forget to ${action.todo.name}!`)
+        return next(action)
+      }
+      return next(action)
+    }
+
     // Create store based on Redux code
     // Also removes the need for the 'root' reducer fn
     const store = Redux.createStore(Redux.combineReducers({
       todos,
       goals,
-    }));
+    }), Redux.applyMiddleware(checker, logger, congrats, remind));
 
     store.subscribe(() => {
-      const { goals, todos } = store.getState();
+      const { todos, goals } = store.getState();
 
       document.getElementById('todos').innerHTML = ''
       document.getElementById('goals').innerHTML = ''
@@ -163,20 +214,19 @@
       goals.forEach(addGoalToDOM);
     })
 
-    // HARD CODED DISPATCHES
+    // Hard coded dispatches (for testing)
 
-    store.dispatch(addTodoAction({
-      id: 0,
-      name: 'Go Outside',
-      complete: true
-    }))
+    // store.dispatch(addTodoAction({
+    //   id: 0,
+    //   name: 'Go Outside',
+    //   complete: true
+    // }))
+    // store.dispatch(addGoalAction({
+    //   id: 0,
+    //   name: 'Learn Redux'
+    // }))
 
-    store.dispatch(addGoalAction({
-      id: 0,
-      name: 'Learn Redux'
-    }))
-
-    // DOM code
+    // DOM CODE
 
     function addTodo() {
       const input = document.getElementById('todo')

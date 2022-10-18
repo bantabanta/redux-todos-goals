@@ -2,9 +2,12 @@
 <html>
 
 <head>
-  <title>Goals and Todos</title>
+  <title>Udacity Todos Goals</title>
   <link rel="stylesheet" href="index.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.1.2/redux.min.js"></script>
+  <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.17.6/babel.min.js"></script>
 </head>
 
 <body>
@@ -20,6 +23,8 @@
     <button id="goalBtn">Add Goal</button>
     <ul id="goals"></ul>
   </div>
+  <hr />
+  <div id="app"></div>
 
   <!-- JS File content: -->
   <script type='text/javascript'>
@@ -170,9 +175,9 @@
 
     const logger = (store) => (next) => (action) => {
       console.group(action.type)
-        console.log('The action: ', action)
-        const result = next(action)
-        console.log('The new state: ', store.getState())
+      console.log('The action: ', action)
+      const result = next(action)
+      console.log('The new state: ', store.getState())
       console.groupEnd();
       return result
     }
@@ -297,6 +302,115 @@
         .append(node);
     }
 
+  </script>
+
+  <!-- REACT APP -->
+  <script type="text/babel">
+
+    // Child components:
+    const List = (props) => {
+      return (
+        <ul>
+          {
+            props.items && props.items.map((item) => (
+              <li key={item.id}>
+                <span
+                style={{
+                  textDecoration: item.complete ? "line-through" : "none",
+                }}
+                onClick={() => props.toggle && props.toggle(item.id)}>{item.name}</span>
+                <button
+                onClick={() => props.remove(item)}>x</button>
+                </li>
+                ))
+          }
+        </ul>
+      );
+    };
+
+    const Todos = (props) => {
+      const inputRef = React.useRef();
+
+      const addItem = (e) => {
+        e.preventDefault();
+        const name = inputRef.current.value;
+        inputRef.current.value = '';
+        // invoke add todo action
+        props.store.dispatch(addTodoAction({
+          name,
+          complete: false,
+          id: generateId(),
+        })
+        );
+      };
+
+      const removeItem = (todo) => {
+        props.store.dispatch(removeTodoAction(todo.id))
+      };
+
+      const toggleItem = (id) => {
+        props.store.dispatch(toggleTodoAction(id))
+      };
+
+      return (
+        <div>
+          <h1>Todo List</h1>
+          <input type="text" placeholder="Add Todo" ref={inputRef} />
+          <button onClick={addItem}>Add Todo</button>
+          <List toggle={toggleItem} remove={removeItem} items={props.todos}/>
+        </div>
+      );
+    };
+
+    const Goals = (props) => {
+      const inputRef = React.useRef();
+      const addItem = (e) => {
+        e.preventDefault();
+        const name = inputRef.current.value;
+        inputRef.current.value = '';
+
+        props.store.dispatch(addGoalAction({
+          name,
+          id: generateId(),
+        })
+        );
+      };
+
+      const removeItem = goal => {
+        props.store.dispatch(removeGoalAction(goal.id))
+      };
+
+      return (
+        <div>
+          <h1>Goals</h1>
+          <input type="text" placeholder="Add Goal" ref={inputRef} />
+          <button onClick={addItem}>Add Goal</button>
+          <List remove={removeItem} items={props.goals}/>
+        </div>
+      );
+    };
+
+    // Parent component:
+    const App = (props) => {
+      const [value, setValue] = React.useState(0);
+
+      React.useEffect(() => {
+        props.store.subscribe(() => {
+          setValue((value) => value + 1);
+        });
+      }, []);
+
+      const { todos, goals } = props.store.getState();
+
+      return (
+        <div>
+          <Todos todos={todos} store={props.store}/>
+          <Goals goals={goals} store={props.store}/>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App store={store} />, document.getElementById("app"));
   </script>
 </body>
 

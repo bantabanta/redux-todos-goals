@@ -11,21 +11,7 @@
 </head>
 
 <body>
-  <div>
-    <h1>Todos List</h1>
-    <input id="todo" type="text" placeholder="Add Todo" />
-    <button id="todoBtn">Add Todo</button>
-    <ul id="todos"></ul>
-  </div>
-  <div>
-    <h1>Goals List</h1>
-    <input id="goal" type="text" placeholder="Add Goal" />
-    <button id="goalBtn">Add Goal</button>
-    <ul id="goals"></ul>
-  </div>
-  <hr />
   <div id="app"></div>
-
   <!-- JS File content: -->
   <script type='text/javascript'>
 
@@ -208,99 +194,6 @@
       todos,
       goals,
     }), Redux.applyMiddleware(checker, logger, congrats, remind));
-
-    store.subscribe(() => {
-      const { todos, goals } = store.getState();
-
-      document.getElementById('todos').innerHTML = ''
-      document.getElementById('goals').innerHTML = ''
-
-      todos.forEach(addTodoToDOM);
-      goals.forEach(addGoalToDOM);
-    })
-
-    // Hard coded dispatches (for testing)
-
-    // store.dispatch(addTodoAction({
-    //   id: 0,
-    //   name: 'Go Outside',
-    //   complete: true
-    // }))
-    // store.dispatch(addGoalAction({
-    //   id: 0,
-    //   name: 'Learn Redux'
-    // }))
-
-    // DOM CODE
-
-    function addTodo() {
-      const input = document.getElementById('todo')
-      const name = input.value
-      input.value = ''
-
-      store.dispatch(addTodoAction({
-        name,
-        complete: false,
-        id: generateId()
-      }));
-    }
-
-    function addGoal() {
-      const input = document.getElementById('goal')
-      const name = input.value
-      input.value = ''
-
-      store.dispatch(addGoalAction({
-        name,
-        id: generateId()
-      }));
-    }
-
-    document.getElementById('todoBtn')
-      .addEventListener('click', addTodo);
-
-    document.getElementById('goalBtn')
-      .addEventListener('click', addGoal);
-
-    function createRemoveButton(onClick) {
-      const removeBtn = document.createElement('button')
-      removeBtn.innerHTML = 'x'
-      removeBtn.addEventListener('click', onClick)
-      return removeBtn
-    }
-
-    function addTodoToDOM(todo) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(`${todo.name} `)
-
-      const removeBtn = createRemoveButton(() => {
-        store.dispatch(removeTodoAction(todo.id))
-      })
-
-      node.appendChild(text)
-      node.appendChild(removeBtn)
-      node.addEventListener('click', () => {
-        store.dispatch(toggleTodoAction(todo.id))
-      })
-      node.style.textDecoration = todo.complete ? 'line-through' : 'none'
-
-      document.getElementById('todos')
-        .appendChild(node);
-    }
-
-    function addGoalToDOM(goal) {
-      const node = document.createElement('li')
-      const text = document.createTextNode(`${goal.name} `)
-
-      const removeBtn = createRemoveButton(() => {
-        store.dispatch(removeGoalAction(goal.id))
-      })
-      node.appendChild(text);
-      node.appendChild(removeBtn);
-
-      document.getElementById('goals')
-        .append(node);
-    }
 
   </script>
 

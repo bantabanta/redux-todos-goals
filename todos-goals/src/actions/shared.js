@@ -1,6 +1,6 @@
-import API from 'goals-todos-api';
+import API from "goals-todos-api";
 
-export const RECEIVE_DATA = "REVEIVE_DATA";
+export const RECEIVE_DATA = "RECEIVE_DATA";
 
 // action creator
 
@@ -16,10 +16,8 @@ function receiveData(todos, goals) {
 
 export function handleInitialData() {
   return (dispatch) => {
-    Promise.all([API.fetchTodos(), API.fetchGoals()]).then(
-      ([todos, goals]) => {
-        dispatch(receiveData(todos, goals));
-      }
-    );
+    Promise.all([API.fetchTodos(), API.fetchGoals()]).then(([todos, goals]) => {
+      dispatch(receiveData(todos, goals));
+    });
   };
 }

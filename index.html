@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/@babel/standalone@7.17.6/babel.min.js"></script>
     <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
     <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
+    <script src="https://unpkg.com/react-redux@7.2.6/dist/react-redux.min.js"></script>
   </head>
 
   <body>
@@ -264,21 +265,21 @@
         return result;
       };
 
-      const congrats = (store) => (next) => (action) => {
-        if (action.type === ADD_GOAL) {
-          alert("That's a great goal!");
-          return next(action);
-        }
-        return next(action);
-      };
+      // const congrats = (store) => (next) => (action) => {
+      //   if (action.type === ADD_GOAL) {
+      //     alert("That's a great goal!");
+      //     return next(action);
+      //   }
+      //   return next(action);
+      // };
 
-      const remind = (store) => (next) => (action) => {
-        if (action.type === ADD_TODO) {
-          alert(`Don't forget to ${action.todo.name}!`);
-          return next(action);
-        }
-        return next(action);
-      };
+      // const remind = (store) => (next) => (action) => {
+      //   if (action.type === ADD_TODO) {
+      //     alert(`Don't forget to ${action.todo.name}!`);
+      //     return next(action);
+      //   }
+      //   return next(action);
+      // };
 
       // Create store based on Redux code
       // Also removes the need for the 'root' reducer fn
@@ -288,19 +289,13 @@
           goals,
           loading,
         }),
-        Redux.applyMiddleware(
-          ReduxThunk.default,
-          checker,
-          logger,
-          congrats,
-          remind
-        )
+        Redux.applyMiddleware(ReduxThunk.default, checker, logger)
       );
     </script>
 
     <!-- REACT APP -->
     <script type="text/babel">
-      // Child components:
+      // Child Components
       const List = (props) => {
         return (
           <ul>
@@ -328,7 +323,7 @@
         const addItem = (e) => {
           e.preventDefault();
 
-          props.store.dispatch(
+          props.dispatch(
             handleAddTodo(
               inputRef.current.value,
               () => (inputRef.current.value = "")
@@ -337,11 +332,11 @@
         };
 
         const removeItem = (todo) => {
-          props.store.dispatch(handleDeleteTodo(todo));
+          props.dispatch(handleDeleteTodo(todo));
         };
 
         const toggleItem = (id) => {
-          props.store.dispatch(handleToggle(id));
+          props.dispatch(handleToggle(id));
         };
 
         return (
@@ -356,9 +351,11 @@
 
       const Goals = (props) => {
         const inputRef = React.useRef();
+
         const addItem = (e) => {
           e.preventDefault();
-          props.store.dispatch(
+
+          props.dispatch(
             handleAddGoal(
               inputRef.current.value,
               () => (inputRef.current.value = "")
@@ -367,7 +364,7 @@
         };
 
         const removeItem = (goal) => {
-          props.store.dispatch(handleDeleteGoal(goal));
+          props.dispatch(handleDeleteGoal(goal));
         };
 
         return (
@@ -380,33 +377,104 @@
         );
       };
 
-      // Parent component:
+      // Parent component
       const App = (props) => {
-        const [value, setValue] = React.useState(0);
-
         React.useEffect(() => {
-          props.store.dispatch(handleInitialData());
-
-          props.store.subscribe(() => {
-            setValue((value) => value + 1);
-          });
+          props.dispatch(handleInitialData());
         }, []);
 
-        const { todos, goals, loading } = props.store.getState();
-
-        if (loading === true) {
+        if (props.loading === true) {
           return <h3>Loading</h3>;
         }
 
         return (
           <div>
-            <Todos todos={todos} store={props.store} />
-            <Goals goals={goals} store={props.store} />
+            <ConnectedTodos />
+            <ConnectedGoals />
           </div>
         );
       };
 
-      ReactDOM.render(<App store={store} />, document.getElementById("app"));
+      // Redux container components
+
+      const ConnectedTodos = ReactRedux.connect((state) => ({
+        todos: state.todos,
+      }))(Todos);
+
+      const ConnectedGoals = ReactRedux.connect((state) => ({
+        goals: state.goals,
+      }))(Goals);
+
+      const ConnectedApp = ReactRedux.connect((state) => ({
+        loading: state.loading,
+      }))(App);
+
+      // const Context = React.createContext();
+
+      // // Changes to implement in connect():
+      // // - Know when the store changes.. use 'store.subscribe'
+      // // - what state is needed.. use 'mapStateToProps'
+      // // - Get the store from Context
+      //
+      // HERE TO 'ReactDom.' is what is handled by ReactRedux
+      // 1. import the script
+      // 2. changed the connected components to call 'ReactRedux.connect'
+      // 3. Render ReactRedux.Provider in ReactDOM (instead of our Provider)
+      //
+      // function connect(mapStateToProps) {
+      //   return (Component) => {
+      //     const Receiver = (props) => {
+      //       const [value, setValue] = React.useState(0);
+
+      //       React.useEffect(() => {
+      //         let unmounted = false;
+      //         const { subscribe } = props.store;
+
+      //         const unsubscribe = subscribe(() => {
+      //           setValue((value) => value + 1);
+      //         });
+
+      //         return () => {
+      //           unsubscribe();
+      //           unmounted = true;
+      //         };
+      //       }, []);
+
+      //       const { dispatch, getState } = props.store;
+      //       const state = getState();
+      //       const stateNeeded = mapStateToProps(state);
+
+      //       return <Component {...stateNeeded} dispatch={dispatch} />;
+      //     };
+
+      //     const ConnectedComponent = () => {
+      //       return (
+      //         <Context.Consumer>
+      //           {(store) => <Receiver store={store} />}
+      //         </Context.Consumer>
+      //       );
+      //     };
+
+      //     return ConnectedComponent;
+      //   };
+      // }
+
+      // // Self made provider
+      // const Provider = (props) => {
+      //   return (
+      //     <Context.Provider value={props.store}>
+      //       {props.children}
+      //     </Context.Provider>
+      //   );
+      // };
+
+      // Switch to rendering CONNECTED App component
+      ReactDOM.render(
+        <ReactRedux.Provider store={store}>
+          <ConnectedApp />
+        </ReactRedux.Provider>,
+        document.getElementById("app")
+      );
     </script>
   </body>
 </html>
